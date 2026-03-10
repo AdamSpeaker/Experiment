@@ -396,40 +396,45 @@
             currentScreen = screenId;
         }
 
-        // Рендер лобби
-        function renderLobby() {
-            const room = window.rooms[currentPlayer.roomId];
-            if (!room) return;
-            
-            document.getElementById('roomCodeDisplay').innerText = room.id;
-            document.getElementById('lobbyCount').innerText = room.players.length;
-            document.getElementById('lobbyMax').innerText = '15';
-            
-            const listDiv = document.getElementById('lobbyPlayersList');
-            let html = '';
-            room.players.forEach(p => {
-                html += `<div class="player-item"><span class="player-name">${p.name || 'Без имени'}</span></div>`;
-            });
-            listDiv.innerHTML = html;
+// Рендер лобби (исправленная версия)
+function renderLobby() {
+    const room = window.rooms[currentPlayer.roomId];
+    if (!room) return;
+    
+    document.getElementById('roomCodeDisplay').innerText = room.id;
+    document.getElementById('lobbyCount').innerText = room.players.length;
+    document.getElementById('lobbyMax').innerText = '15';
+    
+    const listDiv = document.getElementById('lobbyPlayersList');
+    let html = '';
+    room.players.forEach(p => {
+        html += `<div class="player-item"><span class="player-name">${p.name || 'Без имени'}</span></div>`;
+    });
+    listDiv.innerHTML = html;
 
-            const inviteLink = window.location.origin + window.location.pathname + '?join=' + room.id;
-            document.getElementById('inviteLinkInput').value = inviteLink;
+    const inviteLink = window.location.origin + window.location.pathname + '?join=' + room.id;
+    document.getElementById('inviteLinkInput').value = inviteLink;
 
-            // Если я хост, активируем кнопку старта
-            if (currentPlayer.isHost) {
-                const allNamed = room.players.length >= 3 && room.players.every(p => p.name && p.name.trim() !== '');
-                document.getElementById('startGameFromLobby').disabled = !allNamed;
-            } else {
-                document.getElementById('startGameFromLobby').disabled = true;
-            }
+    // Если я хост, активируем кнопку старта
+    if (currentPlayer.isHost) {
+        const allNamed = room.players.length >= 3 && room.players.every(p => p.name && p.name.trim() !== '');
+        document.getElementById('startGameFromLobby').disabled = !allNamed;
+    } else {
+        document.getElementById('startGameFromLobby').disabled = true;
+    }
 
-            // Поле моего имени
-            const me = room.players.find(p => p.id === currentPlayer.id);
-            if (me) {
-                document.getElementById('myNameInput').value = me.name || '';
-            }
+    // --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
+    // Обновляем поле имени, только если оно НЕ в фокусе
+    const nameInput = document.getElementById('myNameInput');
+    const me = room.players.find(p => p.id === currentPlayer.id);
+    
+    if (me) {
+        // Проверяем, не в фокусе ли поле, чтобы не сбрасывать ввод
+        if (document.activeElement !== nameInput) {
+            nameInput.value = me.name || '';
         }
-
+    }
+}
         // Рендер голосования
         function renderVote() {
             const room = window.rooms[currentPlayer.roomId];
@@ -700,3 +705,4 @@
 </script>
 </body>
 </html>
+
